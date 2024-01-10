@@ -1,0 +1,129 @@
+/******************************************************************************
+*
+* Module: Private - Logical Unit  Block 
+*
+* File Name: LOGIC_UNIT.v
+*
+* Description:  this file is used for implementation of the Logical Unit Block 
+*               which is responsible for carrying out the Logical functions
+*               AND, OR, NAND or NOR
+*
+* Author: Mohamed A. Eladawy
+*
+*******************************************************************************/
+
+//********************Port Declaration*************************//
+
+module LOGIC_UNIT # (
+
+parameter a_WIDTH = 16                 , //initialize a parameter variable with value 16  
+parameter b_WIDTH = 16                 , //initialize a parameter variable with value 16 
+parameter alu_fun_WIDTH = 2            , //initialize a parameter variable with value 2
+parameter alu_logical_OUT_WIDTH  = 16  , //initialize a parameter variable with value 16 
+parameter alu_logical_comb_WIDTH = 16  ) //initialize a parameter variable with value 16 
+  
+(
+
+input wire [a_WIDTH-1:0]                a_logic       , //Declaring the Variable As an Input Port with width 16 bits
+input wire [b_WIDTH-1:0]                b_logic       , //Declaring the Variable As an Input Port with width 16 bits
+input wire [alu_fun_WIDTH-1:0]          alu_fun_logic , //Declaring the Variable As an Input Port with width 2 bits
+input wire                              clk           , //Declaring the Variable As an Input Port with width 1 bits
+input wire                              logic_enable  , //Declaring the Variable As an Input Port with width 1 bits
+input wire                              rst_logic     , //Declaring the Variable As an Input Port with width 1 bits
+output reg [alu_logical_OUT_WIDTH-1:0]  logic_out     , //Declaring the Variable As an Input Port with width 16 bits
+output reg                              logic_flag      //Declaring the Variable As an Input Port with width 16 bits
+
+);
+
+//********************Internal Signal Declaration*****************//
+
+reg        [alu_logical_comb_WIDTH-1 : 0 ] logic_out_Comb ; //Declaring the Variable As a register  
+
+/******************************************************************/
+
+//******************************The RTL Code********************************//
+
+/********************Starting The Sequential Always Block********************/
+
+always @(posedge clk or negedge rst_logic)
+ 
+ begin
+   
+  if (! rst_logic ) //Check if the Rest is on or Off 
+     
+     begin 
+       logic_out  <= 16'b0000 ;
+       logic_flag <= 1'b0     ; 
+     end
+ else
+     begin  
+       logic_out <= logic_out_Comb ;
+     end
+ end
+ 
+
+/********************Starting The Combiational Always Block********************/
+
+always @ ( * )
+
+begin 
+
+
+if ( logic_enable )  //Check if the Block is enabled Or Disabled
+  
+  begin 
+
+case ( alu_fun_logic )  
+
+/******************** Starting Arithmatic Operations ********************/
+2'b00: 
+          begin
+        
+           logic_out_Comb = ( a_logic  & (b_logic) ) ;     // Logical And Operation
+           logic_flag = 1'b1          ;     // Rising logical Flag 
+        
+          end 
+
+2'b01 :
+          begin 
+          
+           logic_out_Comb = ( a_logic   | (b_logic) ) ;    //Logical Or Operation
+           logic_flag  = 1'b1          ;    // Rising logical Flag
+          
+          end  
+          
+2'b10 :
+          begin 
+            
+           logic_out_Comb = (~(a_logic   & (b_logic)))  ;  //Logical Nand Operation
+           logic_flag = 1'b1             ;  // Rising logical Flag    
+            
+          end  
+ 
+2'b11 :
+          begin 
+          
+           logic_out_Comb = (~(a_logic  | (b_logic)))   ;   //Logical NOR Operation
+           logic_flag = 1'b1             ;   // Rising logical Flag
+          
+          end          
+    endcase
+  end 
+  
+else 
+     begin 
+       
+     logic_out_Comb = 16'b0000 ;             // intialize the Output with zero   
+     logic_flag     = 1'b0     ;             // intialize the Logical Flag with zero  
+     
+     end  
+end         
+
+/*********************************************************************/
+
+endmodule  
+  
+  
+
+
+

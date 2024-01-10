@@ -1,0 +1,161 @@
+/******************************************************************************
+*
+* Module: Private - CMP Unit Block 
+*
+* File Name: CMP_UNIT.v
+*
+* Description:  this file is used for implementation of the CMP Unit Block 
+*               which is responsible for carrying out the CMP functions
+*               NOP, Equality, greater or Less than
+*
+* Author: Mohamed A. Eladawy
+*
+*******************************************************************************/
+
+//********************Port Declaration*************************//
+
+module CMP_UNIT # (
+
+parameter a_WIDTH = 16                 , //initialize a parameter variable with value 16  
+parameter b_WIDTH = 16                 , //initialize a parameter variable with value 16 
+parameter alu_fun_WIDTH = 2            , //initialize a parameter variable with value 2 
+parameter alu_cmp_OUT_WIDTH  = 4       , //initialize a parameter variable with value 16 
+parameter alu_cmp_comb_WIDTH = 16      ) //initialize a parameter variable with value 16 
+  
+(
+
+input wire [a_WIDTH-1:0]                a_cmp        , //Declaring the Variable As an Input Port with width 16 bits
+input wire [b_WIDTH-1:0]                b_cmp        , //Declaring the Variable As an Input Port with width 16 bits
+input wire [alu_fun_WIDTH-1:0]          alu_fun_cmp  , //Declaring the Variable As an Input Port with width 2 bits
+input wire                              clk          , //Declaring the Variable As an Input Port with width 1 bits
+input wire                              cmp_enable   , //Declaring the Variable As an Input Port with width 1 bits
+input wire                              rst_cmp      , //Declaring the Variable As an Input Port with width 1 bits
+output reg [alu_cmp_OUT_WIDTH-1:0]      cmp_out      , //Declaring the Variable As an Input Port with width 4 bits
+output reg                              cmp_flag       //Declaring the Variable As an Input Port with width 1 bits
+
+);
+
+//********************Internal Signal Declaration*****************//
+
+reg        [alu_cmp_comb_WIDTH-1 : 0 ] cmp_out_Comb ; //Declaring the Variable As a register  
+
+/******************************************************************/
+
+//******************************The RTL Code********************************//
+
+/********************Starting The Sequential Always Block********************/
+
+always @(posedge clk or negedge rst_cmp)
+ 
+ begin
+   
+  if (! rst_cmp ) //Check if the Rest is on or Off 
+     
+     begin 
+       cmp_out  <= 4'b0000 ;
+       cmp_flag <= 1'b0     ; 
+     end
+ else
+     begin  
+       cmp_out <= cmp_out_Comb ;
+     end
+ end
+ 
+
+/********************Starting The Combiational Always Block********************/
+
+always @ ( * )
+
+begin 
+
+
+if ( cmp_enable ) //Check if the Block is enabled Or Disabled 
+  
+  begin 
+
+case ( alu_fun_cmp )  
+
+/******************** Starting Arithmatic Operations ********************/
+2'b00: 
+          begin
+        
+           cmp_out_Comb = 4'b0  ;                  // NO Operation
+           cmp_flag   = 1'b1    ;                  // Compare Flag 
+        
+          end 
+
+2'b01 :
+          begin 
+          
+           cmp_out_Comb = ( a_cmp == b_cmp  ) ;    // Test Equality 
+           cmp_flag = 1'b1                    ;    // Rising Compare Flag
+          
+          end  
+          
+2'b10 :
+          begin 
+            
+          if (  a_cmp > b_cmp )                    // Test Greater or Not Operation
+            
+            begin 
+              
+             cmp_out_Comb = 4'b0010 ;              //Set The Output with 2  
+             cmp_flag = 1'b1        ;              // Rising Compare Flag
+              
+            end 
+          
+          else
+            
+            begin
+            
+             cmp_out_Comb = 4'b0000 ;                //Set The Output with 0 
+             cmp_flag = 1'b1        ;                // Rising Compare Flag
+            
+            end     
+            
+          end  
+ 
+2'b11 :
+          begin 
+          
+          if (  a_cmp < b_cmp )                   // Test Less than or Not Operation
+            
+            begin 
+              
+             cmp_out_Comb = 4'b0011  ;            //Set The Output with 3
+             cmp_flag = 1'b1         ;            // Rising Compare Flag
+              
+            end 
+          
+          else
+            
+            begin
+            
+             cmp_out_Comb = 4'b0000 ;              //Set The Output with 0 
+             cmp_flag = 1'b1        ;              // Rising Compare Flag
+            
+            end           
+          
+          end          
+    endcase
+  end 
+  
+else 
+     begin 
+       
+     cmp_out_Comb = 4'b0000  ;               // intialize the Output with zero   
+     cmp_flag     = 1'b0     ;               // intialize the Logical Flag with zero  
+     
+     end  
+end         
+
+/*********************************************************************/
+
+endmodule  
+  
+  
+
+
+
+
+

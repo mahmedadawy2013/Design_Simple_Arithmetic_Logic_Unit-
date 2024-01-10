@@ -1,0 +1,130 @@
+/******************************************************************************
+*
+* Module: Private - Arithmatic Unit  Block 
+*
+* File Name: ARITHMETIC_UNIT.v
+*
+* Description:  this file is used for implementation of the Arithmatic Unit Block 
+*               which is responsible for carrying out the arithmetic functions
+*               Addition, Subtration, Multblication or Division
+*
+* Author: Mohamed A. Eladawy
+*
+*******************************************************************************/
+
+//********************Port Declaration*************************//
+ds
+module ARITHMETIC_UNIT # (
+
+parameter a_WIDTH = 16              , //initialize a parameter variable with value 16 
+parameter b_WIDTH = 16              , //initialize a parameter variable with value 16 
+parameter alu_fun_WIDTH = 2         , //initialize a parameter variable with value 2
+parameter alu_arith_OUT_WIDTH = 16  , //initialize a parameter variable with value 16 
+parameter alu_arith_comb_WIDTH = 16 ) //initialize a parameter variable with value 16 
+  
+(
+
+input wire [a_WIDTH-1:0]              a            , //Declaring the Variable As an Input Port with width 16 bits
+input wire [b_WIDTH-1:0]              b            , //Declaring the Variable As an Input Port with width 16 bits  
+input wire [alu_fun_WIDTH-1:0]        alu_fun      , //Declaring the Variable As an Input Port with width 2 bits 
+input wire                            clk          , //Declaring the Variable As an Input Port with width 1 bit 
+input wire                            arith_enable , //Declaring the Variable As an Input Port with width 1 bit 
+input wire                            rst_arith    , //Declaring the Variable As an Input Port with width 1 bit 
+output reg [alu_arith_OUT_WIDTH-1:0]  arith_out    , //Declaring the Variable As an Input Port with width 16 bits
+output reg                            arith_flag   , //Declaring the Variable As an Input Port with width 1 bit 
+output reg                            carry_out      //Declaring the Variable As an Input Port with width 1 bit 
+
+);
+
+//********************Internal Signal Declaration*****************//
+
+reg        [alu_arith_comb_WIDTH-1 : 0 ] arith_out_Comb ;  //Declaring the Variable As a register  
+
+/******************************************************************/
+
+//******************************The RTL Code********************************//
+
+/********************Starting The Sequential Always Block********************/
+
+always @(posedge clk or negedge rst_arith)
+ 
+ begin
+   
+  if (! rst_arith )  //Check if the Rest is on or Off
+     
+     begin 
+       arith_out  <= 16'b0000 ;
+       arith_flag <= 1'b0     ; 
+       carry_out  <= 1'b0     ;
+     end
+ else
+     begin  
+       arith_out <= arith_out_Comb ;
+     end
+ end
+ 
+
+/********************Starting The Combiational Always Block********************/
+
+always @ ( * )
+
+begin 
+
+
+if ( arith_enable ) //Check if the Block is enabled Or Disabled 
+  
+  begin 
+
+case ( alu_fun )  
+
+/******************** Starting Arithmatic Operations ********************/
+2'b00: 
+          begin
+        
+           {carry_out ,arith_out_Comb } = ( a + b ) ; //Arithamtic Addition 
+           arith_flag = 1'b1                        ; //Rising Flag 
+        
+          end 
+
+2'b01 :
+          begin 
+          
+           {carry_out ,arith_out_Comb } = ( a - b )   ; //Arithamtic Subtraction
+           arith_flag  = 1'b1                         ; //Rising Flag
+          
+          end  
+          
+2'b10 :
+          begin 
+            
+           {carry_out ,arith_out_Comb } = ( a * b )  ; //Arithamtic Multblication
+           arith_flag = 1'b1                         ; //Rising Flag    
+            
+          end  
+ 
+2'b11 :
+          begin 
+          
+           {carry_out ,arith_out_Comb } = ( a / b ) ; //Arithamtic Division
+           arith_flag = 1'b1                        ; //Rising Flag 
+          
+          end          
+    endcase
+  end 
+  
+else 
+     begin 
+       
+     arith_out_Comb = 16'b0000 ; // intialize the Output with zero   
+     arith_flag     = 1'b0     ; // intialize the Arithmatic Flag with zero  
+     carry_out      = 1'b0     ; // initialize the Carry with zero
+     
+     end  
+end         
+
+/*********************************************************************/
+
+endmodule  
+  
+  
+
